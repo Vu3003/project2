@@ -22,6 +22,15 @@ nltk.download('wordnet')
 
 
 def load_data(database_filepath):
+    """
+        Load data
+        Load data from database
+
+        Inputs: 
+            database_filepath: filepath to database
+        Returns:
+            df: X, y, category_names
+    """
     engine = create_engine(f'sqlite:///{database_filepath}')
     df = pd.read_sql_table('DataScience', con=engine)
     X = df.message
@@ -32,6 +41,15 @@ def load_data(database_filepath):
 
 
 def tokenize(text):
+    """
+        tokenize data
+        tokenize data from text
+
+        Inputs: 
+            text: text needs to tokenize
+        Returns:
+            clean_tokens: token after lemmatize
+    """
     tokens = word_tokenize(text)
     lemma = WordNetLemmatizer()
     clean_tokens = [lemma.lemmatize(token).lower().strip() for token in tokens]
@@ -39,6 +57,11 @@ def tokenize(text):
 
 
 def build_model():
+    """
+        build model
+        Returns:
+            model: GridSearchCV
+    """
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer=tokenize)),
         ('tfidf', TfidfTransformer()),
@@ -52,6 +75,15 @@ def build_model():
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
+    """
+        evaluate model
+        print classification_report by Y_test and y_pred
+        Inputs: 
+            model: model trained
+            X_test: Data
+            Y_test: Data
+            category_names: Data
+    """
     y_pred = model.predict(X_test)
     for index, column in enumerate(category_names):
         print(column, classification_report(Y_test[column], y_pred[:,index]))
@@ -59,6 +91,14 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
+    """
+        save model
+        save model to model_filepath
+
+        Inputs: 
+            model: model trained
+            model_filepath: filepath to save model
+    """
     pickle.dump(model, open(model_filepath, 'wb'))
 
 
