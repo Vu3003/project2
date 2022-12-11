@@ -3,6 +3,16 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 def load_data(messages_filepath, categories_filepath):
+    """
+        Load data
+        Load data from csv files and merge to a single dataframe
+
+        Inputs: 
+            messages_filepath: filepath to messages csv file
+            categories_filepath: filepath to categories csv file
+        Returns:
+            df: dataframe merging categories and messages
+    """
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
     df = pd.merge(messages, categories, on='id')
@@ -10,6 +20,15 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(df):
+    """
+        Clean data
+        Clean data from single dataframe
+
+        Inputs: 
+            df: raw dataframe
+        Returns:
+            df: cleaned dataframe
+    """
     categories = df['categories'].str.split(';', expand=True)
     row = categories.head(1)
     category_colnames =  row.applymap(lambda x: x[:-2]).iloc[0,:]
@@ -17,6 +36,7 @@ def clean_data(df):
     for column in categories:
         categories[column] = categories[column].str[-1].astype(int)
 
+    categories['related'] = categories['related'].replace(to_replace=2, value=1)
     df.drop(columns = ['categories'], inplace=True)
     df = pd.concat([df, categories], axis=1)
     df.drop_duplicates(inplace=True)
@@ -25,12 +45,17 @@ def clean_data(df):
 
 
 def save_data(df, database_filename):
+    """
+        save data
+        save data to database
+
+        Inputs: 
+            df: dataframe
+            database_filename: filename of database
+    """
     engine = create_engine(f'sqlite:///{database_filename}')
     df.to_sql('DataScience', engine, index=False, if_exists='replace')
   
-
-
-
 
 
 def main():
